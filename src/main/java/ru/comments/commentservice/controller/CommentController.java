@@ -1,17 +1,17 @@
 package ru.comments.commentservice.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.comments.commentservice.dto.CommentDto;
-import ru.comments.commentservice.dto.NewCommentDto;
-import ru.comments.commentservice.dto.UpdateCommentDto;
+import ru.comments.commentservice.model.CommentDto;
+import ru.comments.commentservice.model.NewCommentDto;
+import ru.comments.commentservice.model.UpdateCommentDto;
+import ru.comments.commentservice.model.ParamsUserDto;
 import ru.comments.commentservice.service.CommentService;
 
 import java.util.List;
@@ -21,80 +21,55 @@ import java.util.List;
 @RestController
 @Validated
 @RequiredArgsConstructor
-public class CommentController {
+public class CommentController implements CommentsApi {
 
     private final CommentService commentService;
 
+    @Override
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(
-            summary = "Создание комментария",
-            description = "Тело запроса: news_id (Integer) – Идентификатор новости, " +
-                    "user_id (Integer) – Идентификатор автора комментария," +
-                    " comment (String) – Текст комментария"
-    )
-    public CommentDto add(@Valid @RequestBody NewCommentDto dto) {
-        log.info("Starting add method. Creating comment: {}", dto.toString());
-        CommentDto comment = commentService.add(dto);
-        log.info("Completed add method successfully. Result: {}", comment);
-        return comment;
+    public ResponseEntity<CommentDto> createComment(@RequestBody NewCommentDto newCommentDto) {
+        log.info("Starting createComment method. Creating comment: {}", newCommentDto.toString());
+        CommentDto comment = commentService.add(newCommentDto);
+        log.info("Completed createComment method successfully. Result: {}", comment);
+        return ResponseEntity.status(HttpStatus.CREATED).body(comment);
     }
 
-    @PatchMapping("/{commentId}")
-    @Operation(
-            summary = "Обновление информации о комментарии",
-            description = "Параметры: comment_id (Integer) – Идентификатор комментария, " +
-                    "Тело запроса: news_id (Integer) – Идентификатор новости, " +
-                    " user_id (Integer) – Идентификатор автора комментария, " +
-                    " comment (String) – Текст комментария"
-    )
-    public CommentDto update(@PathVariable @Positive int commentId,
-                             @Valid @RequestBody UpdateCommentDto dto) {
-        log.info("Starting update method. Updating userId={}", commentId);
-        CommentDto comment = commentService.update(commentId, dto);
-        log.info("Completed update method successfully. Result: {}", comment);
-        return comment;
-    }
-
-    @DeleteMapping("/{commentId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(
-            summary = "Удаление комментария",
-            description = "Параметры: comment_id (Integer) – Идентификатор комментария"
-    )
-    public void removeById(@PathVariable @Positive int commentId) {
-        log.info("Starting removeById method. Removing commentId={}", commentId);
-        commentService.removeById(commentId);
-        log.info("Completed removeById method successfully");
-    }
-
-    @Operation(
-            summary = "Получение списка комментариев",
-            description = "Параметры: page (Integer) – Номер страницы для пагинации, " +
-                    "size (Integer) – Количество записей на странице, " +
-                    "news_id (Integer) – Значение для фильтрация по ID новости"
-    )
-    @GetMapping
-    public List<CommentDto> getComments(@RequestParam(required = false, defaultValue = "1") Integer page,
-                                        @RequestParam(required = false, defaultValue = "10") Integer size,
-                                        @RequestParam(required = false, name = "news_Id") @Positive Integer newsId) {
-        log.info("Starting getComments method. Getting comments with params: page={}, size={}, newsId={}",
-                page, size, newsId);
-        PageRequest pageRequest = PageRequest.of(page - 1, size);
-        List<CommentDto> comments = commentService.getComments(newsId, pageRequest);
-        log.info("Completed getComments method successfully. Results: {}", comments);
-        return comments;
-    }
-
+    @Override
     @GetMapping("/{commentId}")
-    @Operation(
-            summary = "Получение информации о комментарии",
-            description = "Параметры: comment_id (Integer) – Идентификатор новости"
-    )
-    public CommentDto getById(@PathVariable @Positive int commentId) {
-        log.info("Starting getById method. Getting user by commentId={}", commentId);
+    public ResponseEntity<CommentDto> getCommentById(@PathVariable Long commentId) {
+        log.info("Starting getCommentById method. Getting comment by commentId={}", commentId);
         CommentDto comment = commentService.getById(commentId);
-        log.info("Completed getById method successfully. Result: {}", comment);
-        return comment;
+        log.info("Completed getCommentById method successfully. Result: {}", comment);
+        return ResponseEntity.ok(comment);
+    }
+
+    @Override
+    @GetMapping
+    public ResponseEntity<List<CommentDto>> getComments(@ParameterObject ParamsUserDto queryParams) {
+        log.info("Starting getComments method. Getting comments with params: {}", queryParams);
+        PageRequest pageRequest = PageRequest.of(queryParams.getPage(), queryParams.getSize());
+        List<CommentDto> comments = commentService.getComments(queryParams.getNewsId(), pageRequest);
+        log.info("Completed getComments method successfully. Results count: {}", comments.size());
+        return ResponseEntity.ok(comments);
+    }
+
+    @Override
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<Void> removeComment(@PathVariable Long commentId) {
+        log.info("Starting removeComment method. Removing comment with commentId={}", commentId);
+        commentService.removeById(commentId);
+        log.info("Completed removeComment method successfully");
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @Override
+    @PatchMapping("/{commentId}")
+    public ResponseEntity<CommentDto> updateComment(@PathVariable Long commentId,
+                                                    @RequestBody UpdateCommentDto updateCommentDto) {
+        log.info("Starting updateComment method. Updating comment with commentId={}", commentId);
+        CommentDto comment = commentService.update(commentId, updateCommentDto);
+        log.info("Completed updateComment method successfully. Result: {}", comment);
+        return ResponseEntity.ok(comment);
     }
 }

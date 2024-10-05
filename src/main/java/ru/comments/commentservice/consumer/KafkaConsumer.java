@@ -1,12 +1,13 @@
 package ru.comments.commentservice.consumer;
 
 import jakarta.validation.Valid;
+
+import ru.comments.commentservice.model.NewCommentDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
-import ru.comments.commentservice.dto.NewCommentDto;
 import ru.comments.commentservice.dto.NewsDeletionEvent;
 import ru.comments.commentservice.service.CommentService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -35,7 +36,7 @@ public class KafkaConsumer {
         try {
             System.out.println(message);
             NewsDeletionEvent deletionEvent = objectMapper.readValue(message, NewsDeletionEvent.class);
-            Integer id = deletionEvent.getNewsId();
+            Long id = deletionEvent.getNewsId();
             log.info("Deleting comments for news ID: {}", id);
             commentService.deleteCommentsByNewsId(id);
             log.info("Successfully deleted comments for news ID: {}", id);

@@ -11,6 +11,6 @@ public class NewsDeletionEvent {
 
     @Positive
     @JsonProperty("newsId")
-    private Integer newsId;
+    private Long newsId;
 
 }

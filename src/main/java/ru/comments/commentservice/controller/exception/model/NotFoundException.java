@@ -1,4 +1,4 @@
-package ru.comments.commentservice.exception.model;
+package ru.comments.commentservice.controller.exception.model;
 
 public class NotFoundException extends RuntimeException {
 

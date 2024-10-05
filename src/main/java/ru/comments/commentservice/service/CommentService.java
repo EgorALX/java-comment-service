@@ -1,24 +1,24 @@
 package ru.comments.commentservice.service;
 
 import org.springframework.data.domain.PageRequest;
-import ru.comments.commentservice.dto.CommentDto;
-import ru.comments.commentservice.dto.NewCommentDto;
-import ru.comments.commentservice.dto.UpdateCommentDto;
+import ru.comments.commentservice.model.CommentDto;
+import ru.comments.commentservice.model.NewCommentDto;
+import ru.comments.commentservice.model.UpdateCommentDto;
 
 import java.util.List;
 
 public interface CommentService {
-    List<CommentDto> getComments(Integer newsId, PageRequest pageRequest);
+    List<CommentDto> getComments(Long newsId, PageRequest pageRequest);
 
-    CommentDto getById(Integer commentId);
+    CommentDto getById(Long commentId);
 
     CommentDto add(NewCommentDto dto);
 
     void createComment(NewCommentDto commentDto);
 
-    void deleteCommentsByNewsId(Integer newsId);
+    void deleteCommentsByNewsId(Long newsId);
 
-    CommentDto update(Integer commentId, UpdateCommentDto dto);
+    CommentDto update(Long commentId, UpdateCommentDto dto);
 
-    void removeById(Integer commentId);
+    void removeById(Long commentId);
 }

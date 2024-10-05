@@ -8,9 +8,9 @@ import ru.comments.commentservice.model.Comment;
 import java.util.List;
 
 @Repository
-public interface CommentRepository extends JpaRepository<Comment, Integer> {
+public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    List<Comment> findAllByNewsId(Integer newsId, PageRequest pageRequest);
+    List<Comment> findAllByNewsId(Long newsId, PageRequest pageRequest);
 
-    void deleteAllByNewsId(Integer newsId);
+    void deleteAllByNewsId(Long newsId);
 }

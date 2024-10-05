@@ -5,10 +5,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import ru.comments.commentservice.dto.CommentDto;
-import ru.comments.commentservice.dto.NewCommentDto;
-import ru.comments.commentservice.dto.UpdateCommentDto;
-import ru.comments.commentservice.exception.model.NotFoundException;
+import ru.comments.commentservice.model.CommentDto;
+import ru.comments.commentservice.model.NewCommentDto;
+import ru.comments.commentservice.model.UpdateCommentDto;
+import ru.comments.commentservice.controller.exception.model.NotFoundException;
 import ru.comments.commentservice.mapper.CommentMapper;
 import ru.comments.commentservice.model.Comment;
 import ru.comments.commentservice.repository.CommentRepository;
@@ -27,13 +27,14 @@ public class CommentServiceImpl implements CommentService {
     private KafkaTemplate<String, NewCommentDto> kafkaTemplate;
 
     @Override
-    public List<CommentDto> getComments(Integer newsId, PageRequest pageRequest) {
+    public List<CommentDto> getComments(Long newsId, PageRequest pageRequest) {
         List<Comment> comments = commentRepository.findAllByNewsId(newsId, pageRequest);
+        if (comments.isEmpty()) throw new NotFoundException("Comments with newsId " + newsId + " not found");
         return comments.stream().map(commentMapper::toDto).collect(Collectors.toList());
     }
 
     @Override
-    public CommentDto getById(Integer commentId) {
+    public CommentDto getById(Long commentId) {
         Comment comment = commentRepository
                 .findById(commentId).orElseThrow(() -> new NotFoundException("Comment " + commentId + " not found"));
         return commentMapper.toDto(comment);
@@ -49,19 +50,19 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @KafkaListener(topics = "create-comment-topic", containerFactory = "createCommentKafkaListenerContainerFactory")
     public void createComment(NewCommentDto commentDto) {
-        Integer newsId = commentDto.getNewsId();
+        Long newsId = commentDto.getNewsId();
 
         Comment comment = commentMapper.toComment(commentDto);
         commentRepository.save(comment);
     }
 
     @Override
-    public void deleteCommentsByNewsId(Integer newsId) {
+    public void deleteCommentsByNewsId(Long newsId) {
         commentRepository.deleteAllByNewsId(newsId);
     }
 
     @Override
-    public CommentDto update(Integer commentId, UpdateCommentDto dto) {
+    public CommentDto update(Long commentId, UpdateCommentDto dto) {
         Comment comment = commentRepository
                 .findById(commentId).orElseThrow(() -> new NotFoundException("Comment " + commentId + " not found"));
         if (dto.getUserId() != null) {
@@ -77,7 +78,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public void removeById(Integer commentId) {
+    public void removeById(Long commentId) {
         commentRepository.deleteById(commentId);
     }
 }

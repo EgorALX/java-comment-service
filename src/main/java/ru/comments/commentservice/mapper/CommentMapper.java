@@ -1,18 +1,22 @@
 package ru.comments.commentservice.mapper;
 
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.springframework.stereotype.Component;
-import ru.comments.commentservice.dto.CommentDto;
-import ru.comments.commentservice.dto.NewCommentDto;
 import ru.comments.commentservice.model.Comment;
+import ru.comments.commentservice.model.CommentDto;
+import ru.comments.commentservice.model.NewCommentDto;
 
 @Component
-public class CommentMapper {
+@Mapper(componentModel = "spring")
+public interface CommentMapper {
 
-    public Comment toComment(NewCommentDto dto) {
-        return new Comment(0, dto.getUserId(), dto.getNewsId(), dto.getDescription());
-    }
+    @Mapping(target = "id", ignore = true)
+    Comment toComment(NewCommentDto dto);
 
-    public CommentDto toDto(Comment comment) {
-        return new CommentDto(comment.getUserId(), comment.getNewsId(), comment.getDescription());
-    }
+    @Mapping(target = "userId", source = "userId")
+    @Mapping(target = "newsId", source = "newsId")
+    @Mapping(target = "description", source = "description")
+    CommentDto toDto(Comment comment);
+
 }

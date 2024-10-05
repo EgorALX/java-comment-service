@@ -21,13 +21,24 @@ public class CommentRepositoryTest {
     public void getCommentByParams() {
         PageRequest pageRequest = PageRequest.of(0, 10);
 
-        Comment firstComment = new Comment(1, 1, 1, "first description");
-        Comment secondComment = new Comment(2, 2, 2, "second description");
-        Comment thirdComment = new Comment(3, 3, 3, "third description");
+        Comment firstComment = new Comment();
+        firstComment.setId(1L);
+        firstComment.setUserId(1L);
+        firstComment.setNewsId(1L);
+        firstComment.setDescription("first description");
+        Comment secondComment = new Comment();
+        secondComment.setId(2L);
+        secondComment.setUserId(2L);
+        secondComment.setNewsId(2L);
+        secondComment.setDescription("second description");
+        Comment thirdComment = new Comment();
+        thirdComment.setId(3L);
+        thirdComment.setUserId(3L);
+        thirdComment.setNewsId(3L);
+        thirdComment.setDescription("third description");
 
         commentRepository.saveAll(List.of(firstComment, secondComment, thirdComment));
-
-        List<Comment> commentList = commentRepository.findAllByNewsId(2, pageRequest);
+        List<Comment> commentList = commentRepository.findAllByNewsId(2L, pageRequest);
 
         assertNotNull(commentList);
         assertEquals(1, commentList.size());
@@ -36,10 +47,9 @@ public class CommentRepositoryTest {
         assertEquals(secondComment.getDescription(), commentList.get(0).getDescription());
         assertEquals(secondComment.getId(), commentList.get(0).getId());
 
-        commentRepository.deleteAllByNewsId(2);
-        List<Comment> deletedList = commentRepository.findAllByNewsId(2, pageRequest);
+        commentRepository.deleteAllByNewsId(2L);
+        List<Comment> deletedList = commentRepository.findAllByNewsId(2L, pageRequest);
         assertNotNull(deletedList);
-        System.out.println(deletedList);
         assertEquals(0, deletedList.size());
     }
 }
