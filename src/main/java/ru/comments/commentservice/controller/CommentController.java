@@ -58,9 +58,12 @@ public class CommentController implements CommentsApi {
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> removeComment(@PathVariable Long commentId) {
         log.info("Starting removeComment method. Removing comment with commentId={}", commentId);
-        commentService.removeById(commentId);
-        log.info("Completed removeComment method successfully");
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        boolean isRemoved = commentService.removeById(commentId);
+        if (isRemoved) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
+            log.info("Completed removeComment method successfully");
+        return ResponseEntity.ok().build();
     }
 
     @Override

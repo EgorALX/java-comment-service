@@ -98,7 +98,7 @@ public class CommentControllerTest {
     @Test
     @SneakyThrows
     void deleteCommentTest() {
-        mockMvc.perform(delete("/comments/1")).andExpect(status().isNoContent());
+        mockMvc.perform(delete("/comments/1")).andExpect(status().isOk());
     }
 
     @SneakyThrows

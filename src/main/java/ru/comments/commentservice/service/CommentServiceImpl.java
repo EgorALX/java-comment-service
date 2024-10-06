@@ -14,6 +14,7 @@ import ru.comments.commentservice.model.Comment;
 import ru.comments.commentservice.repository.CommentRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,20 +24,21 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
 
     private final CommentRepository commentRepository;
+    private static final String COMMENT_NOT_FOUND = "Comment not found";
 
     private KafkaTemplate<String, NewCommentDto> kafkaTemplate;
 
     @Override
     public List<CommentDto> getComments(Long newsId, PageRequest pageRequest) {
         List<Comment> comments = commentRepository.findAllByNewsId(newsId, pageRequest);
-        if (comments.isEmpty()) throw new NotFoundException("Comments with newsId " + newsId + " not found");
+        if (comments.isEmpty()) throw new NotFoundException(COMMENT_NOT_FOUND);
         return comments.stream().map(commentMapper::toDto).collect(Collectors.toList());
     }
 
     @Override
     public CommentDto getById(Long commentId) {
         Comment comment = commentRepository
-                .findById(commentId).orElseThrow(() -> new NotFoundException("Comment " + commentId + " not found"));
+                .findById(commentId).orElseThrow(() -> new NotFoundException(COMMENT_NOT_FOUND));
         return commentMapper.toDto(comment);
     }
 
@@ -63,22 +65,24 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDto update(Long commentId, UpdateCommentDto dto) {
-        Comment comment = commentRepository
-                .findById(commentId).orElseThrow(() -> new NotFoundException("Comment " + commentId + " not found"));
-        if (dto.getUserId() != null) {
-            comment.setUserId(dto.getUserId());
-        }
-        if (dto.getNewsId() != null) {
-            comment.setNewsId(dto.getNewsId());
-        }
-        if (dto.getUserId() != null) {
-            comment.setUserId(dto.getUserId());
-        }
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException(COMMENT_NOT_FOUND));
+
+        Optional.ofNullable(dto.getUserId()).ifPresentOrElse(userId -> comment.setUserId((Long) userId), () -> {});
+
+        Optional.ofNullable(dto.getNewsId()).ifPresentOrElse(newsId -> comment.setNewsId((Long) newsId), () -> {});
+
         return commentMapper.toDto(comment);
     }
 
     @Override
-    public void removeById(Long commentId) {
-        commentRepository.deleteById(commentId);
+    public boolean removeById(Long commentId) {
+        try {
+            commentRepository.findById(commentId).orElseThrow(() -> new NotFoundException(COMMENT_NOT_FOUND));
+            commentRepository.deleteById(commentId);
+            return true;
+        } catch (NotFoundException e) {
+            return false;
+        }
     }
 }
