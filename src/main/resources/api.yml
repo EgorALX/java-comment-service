@@ -35,15 +35,29 @@ paths:
       summary: Получение списка комментариев
       operationId: getComments
       parameters:
-        - name: queryParams
+        - name: news_id
           in: query
           schema:
-            $ref: '#/components/schemas/ParamsUserDto'
+            type: integer
+            format: int64
+          description: ID новости
+        - name: page
+          in: query
+          schema:
+            type: integer
+            format: int32
+          description: Номер страницы
+        - name: size
+          in: query
+          schema:
+            type: integer
+            format: int32
+          description: Количество элементов на странице
       responses:
         '200':
           description: OK
           content:
-            'application/json':
+            application/json:
               schema:
                 type: array
                 items:

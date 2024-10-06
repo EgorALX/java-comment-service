@@ -120,10 +120,7 @@ public class CommentControllerTest {
     @SneakyThrows
     @Test
     void getCommentsTest() {
-        int page = 1;
-        int size = 10;
-        PageRequest pageRequest = PageRequest.of(page, size);
-        when(commentService.getComments(any(Long.class), any(PageRequest.class)))
+        when(commentService.getComments(any(), any()))
                 .thenReturn(List.of(commentDto));
 
         mockMvc.perform(get("/comments")

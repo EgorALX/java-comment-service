@@ -1,8 +1,9 @@
 package ru.comments.commentservice.controller;
 
+import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.comments.commentservice.model.CommentDto;
 import ru.comments.commentservice.model.NewCommentDto;
 import ru.comments.commentservice.model.UpdateCommentDto;
-import ru.comments.commentservice.model.ParamsUserDto;
 import ru.comments.commentservice.service.CommentService;
 
 import java.util.List;
@@ -46,10 +46,13 @@ public class CommentController implements CommentsApi {
 
     @Override
     @GetMapping
-    public ResponseEntity<List<CommentDto>> getComments(@ParameterObject ParamsUserDto queryParams) {
-        log.info("Starting getComments method. Getting comments with params: {}", queryParams);
-        PageRequest pageRequest = PageRequest.of(queryParams.getPage(), queryParams.getSize());
-        List<CommentDto> comments = commentService.getComments(queryParams.getNewsId(), pageRequest);
+    public ResponseEntity<List<CommentDto>> getComments(@Parameter @RequestParam(value = "news_id", required = false) Long newsId,
+                                                        @Parameter @RequestParam(value = "page", required = false, defaultValue = "1")  Integer page,
+                                                        @Parameter @RequestParam(value = "size", required = false, defaultValue = "10") Integer size
+    ) {
+        log.info("Starting getComments method. Getting comments with params: newsId = {}, page = {}, size = {}", newsId, page, size);
+        PageRequest pageRequest = PageRequest.of(page - 1, size);
+        List<CommentDto> comments = commentService.getComments(newsId, pageRequest);
         log.info("Completed getComments method successfully. Results count: {}", comments.size());
         return ResponseEntity.ok(comments);
     }
