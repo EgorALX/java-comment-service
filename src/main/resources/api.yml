@@ -1,0 +1,202 @@
+openapi: 3.0.2
+info:
+  title: Comment Service API
+  version: "1.0"
+servers:
+  - url: https://localhost:8081
+tags:
+  - name: Comment
+    description: Comment-specific operations
+paths:
+  /comments:
+    post:
+      tags:
+        - Comment
+      summary: Создание комментария
+      operationId: createComment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewCommentDto'
+      responses:
+        '201':
+          description: Created
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/CommentDto'
+        '400':
+          description: Bad request
+    get:
+      tags:
+        - Comment
+      summary: Получение списка комментариев
+      operationId: getComments
+      parameters:
+        - name: news_id
+          in: query
+          schema:
+            type: integer
+            format: int64
+          description: ID новости
+        - name: page
+          in: query
+          schema:
+            type: integer
+            format: int32
+          description: Номер страницы
+        - name: size
+          in: query
+          schema:
+            type: integer
+            format: int32
+          description: Количество элементов на странице
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommentDto'
+        '400':
+          description: Bad request
+        '404':
+          description: Not found
+  /comments/{commentId}:
+    get:
+      tags:
+        - Comment
+      summary: Получение информации о комментарии
+      operationId: getCommentById
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/CommentDto'
+        '404':
+          description: Not found
+    patch:
+      tags:
+        - Comment
+      summary: Обновление информации о комментарии
+      operationId: updateComment
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCommentDto'
+      responses:
+        '200':
+          description: Updated
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/CommentDto'
+        '400':
+          description: Bad request
+        '404':
+          description: Not found
+    delete:
+      tags:
+        - Comment
+      summary: Удаление комментария
+      operationId: removeComment
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+        '204':
+          description: No Content
+
+components:
+  schemas:
+    CommentDto:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          format: int64
+          minimum: 1
+          description: id пользователя
+        news_id:
+          type: integer
+          format: int64
+          minimum: 1
+          description: id новости
+        description:
+          type: string
+          maxLength: 256
+          description: описание новости
+    NewCommentDto:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          format: int64
+          minimum: 1
+          description: id пользователя
+        news_id:
+          type: integer
+          format: int64
+          minimum: 1
+          description: id новости
+        description:
+          type: string
+          maxLength: 256
+          description: описание новости
+    UpdateCommentDto:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          format: int64
+          description: id пользователя
+        news_id:
+          type: integer
+          format: int64
+          description: id новости
+        description:
+          type: string
+          maxLength: 256
+    ParamsUserDto:
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int32
+          default: 0
+        size:
+          type: integer
+          format: int32
+          default: 10
+        news_id:
+          type: integer
+          format: int64
+          description: id новости
