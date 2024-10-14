@@ -52,8 +52,6 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @KafkaListener(topics = "create-comment-topic", containerFactory = "createCommentKafkaListenerContainerFactory")
     public void createComment(NewCommentDto commentDto) {
-        Long newsId = commentDto.getNewsId();
-
         Comment comment = commentMapper.toComment(commentDto);
         commentRepository.save(comment);
     }
@@ -68,10 +66,11 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException(COMMENT_NOT_FOUND));
 
-        Optional.ofNullable(dto.getUserId()).ifPresentOrElse(userId -> comment.setUserId((Long) userId), () -> {});
+        Optional.ofNullable(dto.getUserId()).ifPresent(comment::setUserId);
+        Optional.ofNullable(dto.getNewsId()).ifPresent(comment::setNewsId);
+        Optional.ofNullable(dto.getDescription()).ifPresent(comment::setDescription);
 
-        Optional.ofNullable(dto.getNewsId()).ifPresentOrElse(newsId -> comment.setNewsId((Long) newsId), () -> {});
-
+        commentRepository.save(comment);
         return commentMapper.toDto(comment);
     }
 
